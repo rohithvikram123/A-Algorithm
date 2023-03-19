@@ -2,6 +2,9 @@ import numpy as np
 import cv2 as cv
 from queue import PriorityQueue
 import math
+import time
+
+startTime = time.time()
 
 boundry = []    
 Pth = {}        #Stores the path for backtracking
@@ -273,3 +276,6 @@ for j in b:
     if cv.waitKey(10) & 0xFF == ord('q'):
           break
 cv.destroyAllWindows()
+
+endTime = time.time()
+print("\nrun time = ", endTime - startTime, "seconds")
