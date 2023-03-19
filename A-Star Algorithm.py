@@ -106,7 +106,7 @@ def User_Inputs_Goal(Obs_Coords):
 #zero degrees function for A*
 def Robot_0(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin(pos[2] * (np.pi/180)))*2)) 
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2])*(np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin(pos[2]*(np.pi/180)))*2)) 
     x,y = newPos
     if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
@@ -126,7 +126,7 @@ def Robot_0(a):
 #30 degrees function for A*
 def Robot_30(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin(30 * (np.pi/180)))*2)) 
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+30) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+30) * (np.pi/180)))*2)) 
     x,y = newPos
     if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
@@ -143,120 +143,65 @@ def Robot_30(a):
             UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
             Pth[newPos] = pos 
 
+#-30 degree function for A*
+def Robot_Inv30(a):
+    pos = a[3]
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-30)*(np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-30)*(np.pi/180)))*2)) 
+    x,y = newPos
+    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+            Cost = a[2] + Length_of_stepsize
+            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+            TotalCost = Cost + Eucledian_dist
+            for m in range(UncheckedList.qsize()):
+                if UncheckedList.queue[m][3] == newPos:
+                    if UncheckedList.queue[m][0] > TotalCost:
+                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                        Pth[newPos] = pos
+                        return
+                    else:
+                        return
+            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+            Pth[newPos] = pos 
 
-#Down function for the dijkstra Algorithm
-# def Down_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0],pos[1]-1)
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
-# #Left function for the dijkstra Algorithm
-# def Left_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0]-1,pos[1])
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
-# #Right function for the dijkstra AAlgorithm
-# def Right_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0]+1,pos[1])
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
+# 60 degrees function for A*
+def Robot_60(a):
+    pos = a[3]
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+60) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+60) * (np.pi/180)))*2)) 
+    x,y = newPos
+    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+            Cost = a[2] + Length_of_stepsize
+            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+            TotalCost = Cost + Eucledian_dist
+            for m in range(UncheckedList.qsize()):
+                if UncheckedList.queue[m][3] == newPos:
+                    if UncheckedList.queue[m][0] > TotalCost:
+                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                        Pth[newPos] = pos
+                        return
+                    else:
+                        return
+            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+            Pth[newPos] = pos 
 
-# #UpLeft function for the dijkstra algorithm
-# def UpLeft_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0]-1,pos[1]+1)
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1.4
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
-# #Dijkstra func for Upright function
-# def UpRight_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0]+1,pos[1]+1)
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1.4
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
-
-# def DownLeft_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0]-1,pos[1]-1)
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1.4
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
-
-# def DownRight_function(a,CheckedList,Obs_Coords):
-#     pos = a[1]
-#     newPos = (pos[0]+1,pos[1]-1)
-#     if (newPos not in CheckedList) and (newPos not in Obs_Coords):
-#         Cost = a[0] + 1.4
-#         for m in range(UncheckedList.qsize()):
-#             if UncheckedList.queue[m][1] == newPos:
-#                 if UncheckedList.queue[m][0] > Cost:
-#                     UncheckedList.queue[m] = (Cost,newPos)
-#                     Pth[newPos] = pos
-#                     return
-#                 else:
-#                     return
-#         UncheckedList.put((Cost,newPos))
-#         Pth[newPos] = pos 
+# -60 degree function for A*
+def Robot_Inv60(a):
+    pos = a[3]
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-60) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-60) * (np.pi/180)))*2)) 
+    x,y = newPos
+    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+            Cost = a[2] + Length_of_stepsize
+            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+            TotalCost = Cost + Eucledian_dist
+            for m in range(UncheckedList.qsize()):
+                if UncheckedList.queue[m][3] == newPos:
+                    if UncheckedList.queue[m][0] > TotalCost:
+                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                        Pth[newPos] = pos
+                        return
+                    else:
+                        return
+            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+            Pth[newPos] = pos 
 
 #Defining the bactracking algorithm 
 def B_tracking(Pth, initial_pt, goal_pt):
@@ -269,9 +214,7 @@ def B_tracking(Pth, initial_pt, goal_pt):
         b_track.append(K)
     b_track.reverse()
     return (b_track)
-
-
-            
+         
 space = np.ones((250,600,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 Robot_Radius = int(input("Enter the Radius of the robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
@@ -290,12 +233,13 @@ Length_of_stepsize = int(input("Enter the stepsize of the robot in units bet(1<=
 # print(initial_pt)
 # print(goal_pt)
 start = (0,0,0,initial_pt)
-UncheckedList.put(start)        
+InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))  
+InitialTotalCost = InitialEucledian_dist   
+start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
+UncheckedList.put(start)
 while True:
     a = UncheckedList.get()
     CheckedList[a[3][1],a[3][0]] = 1
-    Eucledian_dist = np.sqrt(((goal_pt[0] - a[3][0])**2)+((goal_pt[1] - a[3][1])**2))
-    a[1] = Eucledian_dist
     if a[3] != goal_pt and a[1] < 1.5:
         if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) < 600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin(30 * (np.pi/180))) < 250) and (a[3][1] +(Length_of_stepsize * np.sin(30 * (np.pi/180))) > 0):
             Robot_0(a)
