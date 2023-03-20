@@ -309,26 +309,26 @@ b = B_tracking(Pth, initial_pt, LastKeyValue)
 # print("path")
 # print(b)
 
-size = (600, 250)
+size = (1200, 500)
 videoWriter = cv.VideoWriter('aStarSearch.mp4', cv.VideoWriter_fourcc(*'MJPG'), 200, size)
 
 for i in CheckedList:
     # print("i: ", i)
     currentSpace = space.copy()
-    space[250-i[1]][i[0]] = [255,0,0]
+    space[250-i[1], i[0]] = [255,0,0]
     videoWriter.write(currentSpace)
     # cv.imshow("SPACE", space )
     # if cv.waitKey(1) & 0xFF == ord('q'):
     #       break
     
 
-for j in b:
-    # print("j[1]: ", j[1], "is of type: ", type(j[1]))
-    j = (int(j[0]), int(j[1]), int(j[2]))
-    space[250-j[1]][j[0]] = [0,255,0]
-    # cv.imshow("SPACE", space )
-    # if cv.waitKey(10) & 0xFF == ord('q'):
-    #       break
+# for j in b:
+#     # print("j[1]: ", j[1], "is of type: ", type(j[1]))
+#     j = (int(j[0]), int(j[1]), int(j[2]))
+#     space[250-j[1]][j[0]] = [0,255,0]
+#     # cv.imshow("SPACE", space )
+#     # if cv.waitKey(10) & 0xFF == ord('q'):
+#     #       break
 
 videoWriter.release()
 cv.destroyAllWindows()
