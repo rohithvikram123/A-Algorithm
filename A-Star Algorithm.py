@@ -108,8 +108,8 @@ def Robot_0(a):
     x,y,_ = newPos
     x = int(x)
     y = int(y)
-    print("newPos: ", newPos, "is of type: ", type(newPos))
-    print("x: ", x, "is of type: ", type(x))
+    # print("newPos: ", newPos, "is of type: ", type(newPos))
+    # print("x: ", x, "is of type: ", type(x))
     if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
             Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
@@ -215,17 +215,38 @@ def Robot_Inv60(a):
             Pth[newPos] = pos 
 
 #Defining the bactracking algorithm 
+# def B_tracking(Pth, initial_pt, goal_pt):
+#     b_track = []
+#     K = Pth.get(goal_pt)
+#     b_track.append(goal_pt)
+#     b_track.append(K)
+#     while (K != initial_pt):  
+#         K = Pth.get(K)
+#         print("K: ", K)
+#         b_track.append(K)
+#         print("b_track: ", b_track)
+#     b_track.reverse()
+#     return (b_track)
 def B_tracking(Pth, initial_pt, goal_pt):
-    b_track = []
-    K = Pth.get(goal_pt)
-    b_track.append(goal_pt)
-    b_track.append(K)
-    while (K != initial_pt):  
-        K = Pth.get(K)
-        b_track.append(K)
-    b_track.reverse()
-    return (b_track)
-         
+    # initialize the list to store the path
+    path = [goal_pt]
+    current_pt = goal_pt
+
+    # continue backtracking until we reach the starting point
+    while current_pt != initial_pt:
+        # get the previous point
+        prev_pt = Pth[current_pt]
+        # add the previous point to the path
+        path.append(prev_pt)
+        # set the current point to the previous point
+        current_pt = prev_pt
+
+    # reverse the path so that it goes from initial point to goal point
+    path.reverse()
+
+    return path
+
+
 space = np.ones((250,600,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 Robot_Radius = int(input("Enter the Radius of the robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
@@ -253,15 +274,15 @@ UncheckedList.put(start)
 #print(UncheckedList)
 while True:
     a = UncheckedList.get()
-    print("a: ", a, "is of type: ", type(a))
-    print("a[3]: ", a[3], "is of type: ", type(a[3]))
-    print("a[3][1]: ", a[3][1], "is of type: ", type(a[3][1]))
+    # print("a: ", a, "is of type: ", type(a))
+    # print("a[3]: ", a[3], "is of type: ", type(a[3]))
+    # print("a[3][1]: ", a[3][1], "is of type: ", type(a[3][1]))
     x = int(a[3][0])
     y = int(a[3][1])
 
     CheckedList[y, x] = 1
     if a[3] != goal_pt and a[1] > 1.5:
-        print("into if")
+        # print("into if")
         if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) < 600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin(30 * (np.pi/180))) < 250) and (a[3][1] +(Length_of_stepsize * np.sin(30 * (np.pi/180))) > 0):
             Robot_0(a)
         if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) < 600) and(a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180))) < 250) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180))) > 0):
@@ -272,25 +293,42 @@ while True:
             Robot_60(a)
         if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-60) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin(a[3][2]-60 * (np.pi / 180))>0)):
             Robot_Inv60(a)
+    # if a[3] == goal_pt:
+    #     Pth[newPos] = pos
 
 
     else:
         print("success")
+        Robot_0(a)
+        print("CheckedList: ", CheckedList)
         break
-b = B_tracking(Pth, initial_pt, goal_pt)
-print("path")
-print(b)
+print("Pth: ", Pth)
+print("backtracking...")
+LastKeyValue = list(Pth)[-1]
+b = B_tracking(Pth, initial_pt, LastKeyValue)
+# print("path")
+# print(b)
+
+size = (600, 250)
+videoWriter = cv.VideoWriter('aStarSearch.mp4', cv.VideoWriter_fourcc(*'MJPG'), 200, size)
 
 for i in CheckedList:
+    # print("i: ", i)
+    currentSpace = space.copy()
     space[250-i[1]][i[0]] = [255,0,0]
-    cv.imshow("SPACE", space )
-    if cv.waitKey(1) & 0xFF == ord('q'):
-          break
+    videoWriter.write(currentSpace)
+    # cv.imshow("SPACE", space )
+    # if cv.waitKey(1) & 0xFF == ord('q'):
+    #       break
     
-    
+
 for j in b:
+    # print("j[1]: ", j[1], "is of type: ", type(j[1]))
+    j = (int(j[0]), int(j[1]), int(j[2]))
     space[250-j[1]][j[0]] = [0,255,0]
-    cv.imshow("SPACE", space )
-    if cv.waitKey(10) & 0xFF == ord('q'):
-          break
+    # cv.imshow("SPACE", space )
+    # if cv.waitKey(10) & 0xFF == ord('q'):
+    #       break
+
+videoWriter.release()
 cv.destroyAllWindows()
