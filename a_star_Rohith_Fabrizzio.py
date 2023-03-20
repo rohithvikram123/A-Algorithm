@@ -2,6 +2,9 @@ import numpy as np
 import cv2 as cv
 from queue import PriorityQueue
 import math
+import time
+
+startTime = time.time()
 
 boundry = []    
 Pth = {}        #Stores the path for backtracking
@@ -313,15 +316,21 @@ size = (1200, 500)
 videoWriter = cv.VideoWriter('aStarSearch.mp4', cv.VideoWriter_fourcc(*'MJPG'), 100, size)
 
 print("Length of CheckedList: ", len(CheckedList))
-for i in CheckedList:
-    print("i: ", i)
+
+# for i in CheckedList:
+#     print("i: ", i)
+#     currentSpace = space.copy()
+#     space[250-i[1], i[0]] = [255,0,0]
+#     videoWriter.write(currentSpace)
+#     # cv.imshow("SPACE", space )
+#     # if cv.waitKey(1) & 0xFF == ord('q'):
+#     #       break
+Pth = list(Pth)
+for location in Pth:
     currentSpace = space.copy()
-    space[250-i[1], i[0]] = [255,0,0]
+    space[250 - int(location[1]), int(location[0])] = [255, 0, 0]
     videoWriter.write(currentSpace)
-    # cv.imshow("SPACE", space )
-    # if cv.waitKey(1) & 0xFF == ord('q'):
-    #       break
-    
+
 
 for j in b:
     # print("j[1]: ", j[1], "is of type: ", type(j[1]))
@@ -332,3 +341,6 @@ for j in b:
 
 videoWriter.release()
 cv.destroyAllWindows()
+
+endTime = time.time()
+print("\nrun time = ", endTime - startTime, "seconds")
