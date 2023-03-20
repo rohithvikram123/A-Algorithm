@@ -2,15 +2,12 @@ import numpy as np
 import cv2 as cv
 from queue import PriorityQueue
 import math
-import time
-
-startTime = time.time()
 
 boundry = []    
 Pth = {}        #Stores the path for backtracking
 UncheckedList = PriorityQueue()     #Used to store unvisited nodes
 b_track = []            
-CheckedList = np.zeros((251,601),dtype='uint8')     # Used to store the visited nodes
+CheckedList = np.zeros((1201,1201),dtype='uint8')     # Used to store the visited nodes
 #Creating the Obstacle Space
 def obstacle_space(space):
     h,w,_ = space.shape
@@ -68,14 +65,12 @@ def resize_obstacle(space):
     for l in range(h):
         for m in range(w):
             if space[l][m][2] == 255:
-                boundry.append((m,500-l))
+                boundry.append((m,250-l))
             if space[l][m][1] == 255:
-                boundry.append((m,500-l))
+                boundry.append((m,250-l))
             if space[l][m][0] == 255:
-                boundry.append((m,500-l))
+                boundry.append((m,250-l))
     return boundry
-
-
 
 
 #Getting User Inputs For the Start node from the user
@@ -109,9 +104,13 @@ def User_Inputs_Goal(Obs_Coords):
 #zero degrees function for A*
 def Robot_0(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2])*(np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin(pos[2]*(np.pi/180)))*2)) 
-    x,y = newPos
-    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2])*(np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin(pos[2]*(np.pi/180)))),pos[2]) 
+    x,y,_ = newPos
+    x = int(x)
+    y = int(y)
+    print("newPos: ", newPos, "is of type: ", type(newPos))
+    print("x: ", x, "is of type: ", type(x))
+    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
             Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
             TotalCost = Cost + Eucledian_dist
@@ -129,9 +128,11 @@ def Robot_0(a):
 #30 degrees function for A*
 def Robot_30(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+30) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+30) * (np.pi/180)))*2)) 
-    x,y = newPos
-    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+30) * (np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+30) * (np.pi/180)))),pos[2]) 
+    x,y,_ = newPos
+    x = int(x)
+    y = int(y)
+    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
             Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
             TotalCost = Cost + Eucledian_dist
@@ -149,9 +150,11 @@ def Robot_30(a):
 #-30 degree function for A*
 def Robot_Inv30(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-30)*(np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-30)*(np.pi/180)))*2)) 
-    x,y = newPos
-    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-30)*(np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-30)*(np.pi/180)))),pos[2]) 
+    x,y,_ = newPos
+    x = int(x)
+    y = int(y)
+    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
             Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
             TotalCost = Cost + Eucledian_dist
@@ -169,9 +172,11 @@ def Robot_Inv30(a):
 # 60 degrees function for A*
 def Robot_60(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+60) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+60) * (np.pi/180)))*2)) 
-    x,y = newPos
-    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+60) * (np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+60) * (np.pi/180)))),pos[2]) 
+    x,y,_ = newPos
+    x = int(x)
+    y = int(y)
+    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
             Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
             TotalCost = Cost + Eucledian_dist
@@ -189,12 +194,15 @@ def Robot_60(a):
 # -60 degree function for A*
 def Robot_Inv60(a):
     pos = a[3]
-    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-60) * (np.pi/180)))*2),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-60) * (np.pi/180)))*2)) 
-    x,y = newPos
-    if (CheckedList[y][x] != 1) and (newPos not in Obs_Coords):
+    newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-60) * (np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-60) * (np.pi/180)))),pos[2]) 
+    x,y,_ = newPos
+    x = int(x)
+    y = int(y)
+    if (CheckedList[y][x] != 1) and ((newPos[0],newPos[1]) not in Obs_Coords):
             Cost = a[2] + Length_of_stepsize
             Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
             TotalCost = Cost + Eucledian_dist
+            CheckedList[y][x] = 1
             for m in range(UncheckedList.qsize()):
                 if UncheckedList.queue[m][3] == newPos:
                     if UncheckedList.queue[m][0] > TotalCost:
@@ -223,6 +231,7 @@ Robot_Radius = int(input("Enter the Radius of the robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
 space = np.repeat(space,2,axis=0)
 space = np.repeat(space,2,axis=1)
+
 Obs_Coords= resize_obstacle(space)
 # for val in Obs_Coords:
 #     if val == (101,70):
@@ -232,27 +241,36 @@ initial_pt = User_Inputs_Start(Obs_Coords)
 goal_pt = User_Inputs_Goal(Obs_Coords)
 Length_of_stepsize = int(input("Enter the stepsize of the robot in units bet(1<=stepsize<=10): "))
 
-
-# print(initial_pt)
-# print(goal_pt)
+#print(initial_pt)
+#print(goal_pt)
 start = (0,0,0,initial_pt)
+#print(start)
 InitialEucledian_dist = np.sqrt(((goal_pt[0] - start[3][0])**2)+((goal_pt[1] - start[3][1])**2))  
 InitialTotalCost = InitialEucledian_dist   
 start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
+#print(start)
 UncheckedList.put(start)
+#print(UncheckedList)
 while True:
     a = UncheckedList.get()
-    CheckedList[a[3][1],a[3][0]] = 1
-    if a[3] != goal_pt and a[1] < 1.5:
+    print("a: ", a, "is of type: ", type(a))
+    print("a[3]: ", a[3], "is of type: ", type(a[3]))
+    print("a[3][1]: ", a[3][1], "is of type: ", type(a[3][1]))
+    x = int(a[3][0])
+    y = int(a[3][1])
+
+    CheckedList[y, x] = 1
+    if a[3] != goal_pt and a[1] > 1.5:
+        print("into if")
         if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) < 600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin(30 * (np.pi/180))) < 250) and (a[3][1] +(Length_of_stepsize * np.sin(30 * (np.pi/180))) > 0):
             Robot_0(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) < 600) and(a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) > 0) and ((a[3][1]+30) + (Length_of_stepsize * np.sin(30 * (np.pi/180))) < 250) and ((a[3][1]+30) + (Length_of_stepsize * np.sin(30 * (np.pi/180))) > 0):
+        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) < 600) and(a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180))) < 250) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180))) > 0):
             Robot_30(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180)))>0) and ((a[3][1]-30) + (Length_of_stepsize * np.sin(-30 * (np.pi / 180))<250)) and ((a[3][1]-30) + (Length_of_stepsize * np.sin(-30 * (np.pi / 180))>0)):
+        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-30) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-30) * (np.pi / 180))>0)):
             Robot_Inv30(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin(60 * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin(60 * (np.pi / 180))>0)):
+        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+60) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+60) * (np.pi / 180))>0)):
             Robot_60(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin(-60 * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin(-60 * (np.pi / 180))>0)):
+        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-60) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin(a[3][2]-60 * (np.pi / 180))>0)):
             Robot_Inv60(a)
 
 
@@ -264,18 +282,15 @@ print("path")
 print(b)
 
 for i in CheckedList:
-    space[500-i[1]][i[0]] = [255,0,0]
+    space[250-i[1]][i[0]] = [255,0,0]
     cv.imshow("SPACE", space )
     if cv.waitKey(1) & 0xFF == ord('q'):
           break
     
     
 for j in b:
-    space[500-j[1]][j[0]] = [0,255,0]
+    space[250-j[1]][j[0]] = [0,255,0]
     cv.imshow("SPACE", space )
     if cv.waitKey(10) & 0xFF == ord('q'):
           break
 cv.destroyAllWindows()
-
-endTime = time.time()
-print("\nrun time = ", endTime - startTime, "seconds")
