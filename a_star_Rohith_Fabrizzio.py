@@ -2,16 +2,15 @@ import numpy as np
 import cv2 as cv
 from queue import PriorityQueue
 import math
-import time
-
-startTime = time.time()
 
 boundry = []    
 Pth = {}        #Stores the path for backtracking
 UncheckedList = PriorityQueue()     #Used to store unvisited nodes
 b_track = []            
-CheckedList = np.zeros((1201,1201),dtype='uint8')     # Used to store the visited nodes
+CloseList = []
+CheckedList = np.zeros((250,600),dtype='uint8')     # Used to store the visited nodes
 #Creating the Obstacle Space
+#Obtacle with Obstacle, Obstacle Clearance and Robot Radius
 def obstacle_space(space):
     h,w,_ = space.shape
     for l in range(h):
@@ -19,50 +18,55 @@ def obstacle_space(space):
             if ((250-l) - 5 < 0) or ((m) - 5 < 0) or ((250-l) - 245 > 0) or ((m) - 595 > 0): #boundary
                 space[l][m] = [0,0,255]
                 
-            if (m > (95-Robot_Radius)) and (m < (155+Robot_Radius)) and (250-l < 105+Robot_Radius) and (250-l > 2): #rectangle1 with robot radius clearance
-                space[l][m] = [255,0,0]
+            if (m > (100-(Obstacle_Clearance+Robot_Radius))) and (m < (151+(Obstacle_Clearance+Robot_Radius))) and (250-l < 101+(Obstacle_Clearance+Robot_Radius)) and (250-l > 2): #rectangle1 with robot radius clearance
+                space[l][m] = [20,0,0]
                 
-            if (m > 95) and (m < 155) and (250-l < 105) and (250-l >2):     #rectangle1 with boundry clearance
+            if (m > 100-Obstacle_Clearance) and (m < 151+Obstacle_Clearance) and (250-l < 101+Obstacle_Clearance) and (250-l >2):     #rectangle1 with boundry clearance
                 space[l][m] = [0,255,0]
                 
             if (m > 100) and (m < 151) and (250-l < 101) and (250-l > 2):   #rectangle1
                 space[l][m] = [0,0,255]
                 
-            if(m > 95-Robot_Radius) and (m < 155+Robot_Radius) and (250-l >145-Robot_Radius) and (250-l < 248):
-                space[l][m] = [255,0,0]
+            if(m > 100-(Obstacle_Clearance+Robot_Radius)) and (m < 151+(Obstacle_Clearance+Robot_Radius)) and (250-l >150-(Obstacle_Clearance+Robot_Radius)) and (250-l < 248):
+                space[l][m] = [20,0,0]
                 
-            if(m > 95) and (m < 155) and (250-l >145) and (250-l < 248):
+            if(m > 100-Obstacle_Clearance) and (m < 151 + Obstacle_Clearance) and (250-l >150-Obstacle_Clearance) and (250-l < 248):
                 space[l][m] = [0,255,0]
                 
             if (m > 100) and (m < 151) and (250-l >150) and (250-l < 248):  #rectangle2
                 space[l][m] = [0,0,255]
+            new_v1 = 223.205 - Obstacle_Clearance*1.154
+            new_v2 = 26.795 + Obstacle_Clearance*1.154
+            new_v3 = 373.207 + Obstacle_Clearance*1.154
+            new_v4 = 123.207 +Obstacle_Clearance*1.154    
+            new_c1 = new_v1 - Robot_Radius*1.154
+            new_c2 = new_v2 + Robot_Radius*1.154
+            new_c3 = new_v3 + Robot_Radius*1.154
+            new_c4 = new_v4 + Robot_Radius*1.154
+            if (((0.577*m)+(250-l)-new_c1)>=0) and ((m-235.048+(Obstacle_Clearance+Robot_Radius))>=0) and (((-0.577*m)+(250-l)-new_c2<=0)) and (((0.577*m)+(250-l)-new_c3)<=0) and ((m-364.951-(Obstacle_Clearance+Robot_Radius))<=0) and (((-0.577*m)+(250-l)+new_c4)>=0):
+                space[l][m] = [20,0,0]
                 
-            new_c1 = 217.432 - Robot_Radius*1.154
-            new_c2 = 32.567 + Robot_Radius*1.154
-            new_c3 = 378.979 + Robot_Radius*1.154
-            new_c4 = 128.980 + Robot_Radius*1.154
-            if (((0.577*m)+(250-l)-new_c1)>=0) and ((m-230.048+Robot_Radius)>=0) and (((-0.577*m)+(250-l)-new_c2<=0)) and (((0.577*m)+(250-l)-new_c3)<=0) and ((m-369.951-Robot_Radius)<=0) and (((-0.577*m)+(250-l)+new_c4)>=0):
-                space[l][m] = [255,0,0]
-                
-            if (((0.577*m)+(250-l)-217.432)>=0) and ((m-230.048)>=0) and (((-0.577*m) + (250-l)-32.567)<=0) and (((0.577*m)+(250-l)- 378.979)<=0) and ((m-369.951)<=0) and (((-0.577*m)+(250-l)+128.980)>=0):
+            if (((0.577*m)+(250-l)-new_v1)>=0) and ((m-235.048+Obstacle_Clearance)>=0) and (((-0.577*m) + (250-l)-new_v2<=0)) and (((0.577*m)+(250-l)- new_v3)<=0) and ((m-364.951-Obstacle_Clearance)<=0) and (((-0.577*m)+(250-l)+new_v4)>=0):
                 space[l][m] = [0,255,0]
                 
             if (((9375*m)+(16238*(250-l))-3624400)>=0) and (((125*m)-29381)>=0) and (((9375*m)-(16238*(250-l))+435100)>=0) and (((37500*m)+(64951*(250-l))-24240200)<=0) and (((1000*m)-364951)<=0) and (((37500*m)-(64951*(250-l))-8002450)<=0):   #hexagon
                 space[l][m] = [0,0,255]
+
+            t_v1 = 1145 + Obstacle_Clearance*2.23
+            t_v2 = 895 + Obstacle_Clearance*2.23    
+            t_c1 = t_v1 + Robot_Radius*2.23
+            t_c2 = t_v2 + Robot_Radius*2.23
+            if(((m-460+(Obstacle_Clearance+Robot_Radius))>=0)) and (((2*m)+(250-l)-t_c1)<=0) and (((2*m)-(250-l)-t_c2)<=0) and ((250-l)>25-(Obstacle_Clearance+Robot_Radius)) and ((250-l)<(225+Obstacle_Clearance+Robot_Radius)):
+                space[l][m] = [20,0,0]
                 
-            t_c1 = 1156.18 + Robot_Radius*2.23
-            t_c2 = 906.18 + Robot_Radius*2.23
-            if(((m-455+Robot_Radius)>=0)) and (((2*m)+(250-l)-t_c1)<=0) and (((2*m)-(250-l)-t_c2)<=0) and ((250-l)>15) and ((250-l)<235):
-                space[l][m] = [255,0,0]
-                
-            if ((m-455)>=0) and (((2*m)+(250-l)-1156.18)<=0) and (((2*m)-(250-l)-906.18)<=0) and ((250-l)>20) and ((250-l)<230):
+            if ((m-460+Obstacle_Clearance)>=0) and (((2*m)+(250-l)-t_v1)<=0) and (((2*m)-(250-l)-t_v2)<=0) and ((250-l)>(25-Obstacle_Clearance)) and ((250-l)<(225+Obstacle_Clearance)):
                 space[l][m] = [0,255,0]
                 
             if (((m-460)>=0)) and(((2*m)+(250-l)-1145)<=0)and (((2*m)-(250-l)-895)<=0): #triangle
                 space[l][m] = [0,0,255]
                 
     return 
-
+#taking the obstacle coordinates into a list
 def resize_obstacle(space):
     h,w,_ = space.shape
     for l in range(h):
@@ -71,9 +75,11 @@ def resize_obstacle(space):
                 boundry.append((m,250-l))
             if space[l][m][1] == 255:
                 boundry.append((m,250-l))
-            if space[l][m][0] == 255:
+            if space[l][m][0] == 20:
                 boundry.append((m,250-l))
     return boundry
+
+
 
 
 #Getting User Inputs For the Start node from the user
@@ -109,152 +115,132 @@ def Robot_0(a):
     pos = a[3]
     newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2])*(np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin(pos[2]*(np.pi/180)))),pos[2]) 
     x,y,_ = newPos
-    x = int(x)
-    y = int(y)
-    # print("newPos: ", newPos, "is of type: ", type(newPos))
-    # print("x: ", x, "is of type: ", type(x))
-    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
-            Cost = a[2] + Length_of_stepsize
-            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
-            TotalCost = Cost + Eucledian_dist
-            for m in range(UncheckedList.qsize()):
-                if UncheckedList.queue[m][3] == newPos:
-                    if UncheckedList.queue[m][0] > TotalCost:
-                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
-                        Pth[newPos] = pos
-                        return
-                    else:
-                        return
-            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
-            Pth[newPos] = pos 
+    if (0<=x<600) and (0<=y<250):
+        if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
+                CloseList.append(newPos)
+                Cost = a[2] + Length_of_stepsize
+                Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+                TotalCost = Cost + Eucledian_dist
+                for m in range(UncheckedList.qsize()):
+                    if UncheckedList.queue[m][3] == newPos:
+                        if UncheckedList.queue[m][0] > TotalCost:
+                            UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                            Pth[newPos] = pos
+                            return
+                        else:
+                            return
+                UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+                Pth[newPos] = pos 
 
 #30 degrees function for A*
 def Robot_30(a):
     pos = a[3]
     newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+30) * (np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+30) * (np.pi/180)))),pos[2]) 
     x,y,_ = newPos
-    x = int(x)
-    y = int(y)
-    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
-            Cost = a[2] + Length_of_stepsize
-            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
-            TotalCost = Cost + Eucledian_dist
-            for m in range(UncheckedList.qsize()):
-                if UncheckedList.queue[m][3] == newPos:
-                    if UncheckedList.queue[m][0] > TotalCost:
-                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
-                        Pth[newPos] = pos
-                        return
-                    else:
-                        return
-            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
-            Pth[newPos] = pos 
+    if (0<=x<600) and (0<=y<250):
+        if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
+                CloseList.append(newPos)
+                Cost = a[2] + Length_of_stepsize
+                Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+                TotalCost = Cost + Eucledian_dist
+                for m in range(UncheckedList.qsize()):
+                    if UncheckedList.queue[m][3] == newPos:
+                        if UncheckedList.queue[m][0] > TotalCost:
+                            UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                            Pth[newPos] = pos
+                            return
+                        else:
+                            return
+                UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+                Pth[newPos] = pos 
 
 #-30 degree function for A*
 def Robot_Inv30(a):
     pos = a[3]
     newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-30)*(np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-30)*(np.pi/180)))),pos[2]) 
     x,y,_ = newPos
-    x = int(x)
-    y = int(y)
-    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
-            Cost = a[2] + Length_of_stepsize
-            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
-            TotalCost = Cost + Eucledian_dist
-            for m in range(UncheckedList.qsize()):
-                if UncheckedList.queue[m][3] == newPos:
-                    if UncheckedList.queue[m][0] > TotalCost:
-                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
-                        Pth[newPos] = pos
-                        return
-                    else:
-                        return
-            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
-            Pth[newPos] = pos 
+    if (0<=x<600) and (0<=y<250):
+        if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
+                CloseList.append(newPos)
+                Cost = a[2] + Length_of_stepsize
+                Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+                TotalCost = Cost + Eucledian_dist
+                for m in range(UncheckedList.qsize()):
+                    if UncheckedList.queue[m][3] == newPos:
+                        if UncheckedList.queue[m][0] > TotalCost:
+                            UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                            Pth[newPos] = pos
+                            return
+                        else:
+                            return
+                UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+                Pth[newPos] = pos 
 
 # 60 degrees function for A*
 def Robot_60(a):
     pos = a[3]
     newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]+60) * (np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]+60) * (np.pi/180)))),pos[2]) 
     x,y,_ = newPos
-    x = int(x)
-    y = int(y)
-    if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
-            Cost = a[2] + Length_of_stepsize
-            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
-            TotalCost = Cost + Eucledian_dist
-            for m in range(UncheckedList.qsize()):
-                if UncheckedList.queue[m][3] == newPos:
-                    if UncheckedList.queue[m][0] > TotalCost:
-                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
-                        Pth[newPos] = pos
-                        return
-                    else:
-                        return
-            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
-            Pth[newPos] = pos 
+    if (0<=x<=600) and (0<=y<=250):
+        if (CheckedList[y][x] != 1) and ((x,y) not in Obs_Coords):
+                CloseList.append(newPos)
+                Cost = a[2] + Length_of_stepsize
+                Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+                TotalCost = Cost + Eucledian_dist
+                for m in range(UncheckedList.qsize()):
+                    if UncheckedList.queue[m][3] == newPos:
+                        if UncheckedList.queue[m][0] > TotalCost:
+                            UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                            Pth[newPos] = pos
+                            return
+                        else:
+                            return
+                UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+                Pth[newPos] = pos
 
 # -60 degree function for A*
 def Robot_Inv60(a):
     pos = a[3]
     newPos = (round((pos[0] + Length_of_stepsize * np.cos((pos[2]-60) * (np.pi/180)))),round((pos[1] + Length_of_stepsize * np.sin((pos[2]-60) * (np.pi/180)))),pos[2]) 
     x,y,_ = newPos
-    x = int(x)
-    y = int(y)
-    if (CheckedList[y][x] != 1) and ((newPos[0],newPos[1]) not in Obs_Coords):
-            Cost = a[2] + Length_of_stepsize
-            Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
-            TotalCost = Cost + Eucledian_dist
-            CheckedList[y][x] = 1
-            for m in range(UncheckedList.qsize()):
-                if UncheckedList.queue[m][3] == newPos:
-                    if UncheckedList.queue[m][0] > TotalCost:
-                        UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
-                        Pth[newPos] = pos
-                        return
-                    else:
-                        return
-            UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
-            Pth[newPos] = pos 
+    if (0<=x<600) and (0<=y<250):
+        if (CheckedList[y][x] != 1) and ((newPos[0],newPos[1]) not in Obs_Coords):
+                CloseList.append(newPos)
+                Cost = a[2] + Length_of_stepsize
+                Eucledian_dist = np.sqrt(((goal_pt[0] - newPos[0])**2)+((goal_pt[1] - newPos[1])**2))
+                TotalCost = Cost + Eucledian_dist
+                CheckedList[y][x] = 1
+                for m in range(UncheckedList.qsize()):
+                    if UncheckedList.queue[m][3] == newPos:
+                        if UncheckedList.queue[m][0] > TotalCost:
+                            UncheckedList.queue[m] = (TotalCost,Eucledian_dist,Cost,newPos)
+                            Pth[newPos] = pos
+                            return
+                        else:
+                            return
+                UncheckedList.put((TotalCost,Eucledian_dist,Cost,newPos))
+                Pth[newPos] = pos 
 
 #Defining the bactracking algorithm 
-# def B_tracking(Pth, initial_pt, goal_pt):
-#     b_track = []
-#     K = Pth.get(goal_pt)
-#     b_track.append(goal_pt)
-#     b_track.append(K)
-#     while (K != initial_pt):  
-#         K = Pth.get(K)
-#         print("K: ", K)
-#         b_track.append(K)
-#         print("b_track: ", b_track)
-#     b_track.reverse()
-#     return (b_track)
 def B_tracking(Pth, initial_pt, goal_pt):
-    # initialize the list to store the path
-    path = [goal_pt]
-    current_pt = goal_pt
-
-    # continue backtracking until we reach the starting point
-    while current_pt != initial_pt:
-        # get the previous point
-        prev_pt = Pth[current_pt]
-        # add the previous point to the path
-        path.append(prev_pt)
-        # set the current point to the previous point
-        current_pt = prev_pt
-
-    # reverse the path so that it goes from initial point to goal point
-    path.reverse()
-
-    return path
-
-
-space = np.ones((250,600,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
+    b_track = []
+    a = list(Pth)[-1]
+    K = Pth.get(a)
+    b_track.append(a)
+    b_track.append(K)
+    
+    while K != (initial_pt):  
+        K = Pth.get(K)
+        
+        b_track.append(K)
+    b_track.reverse()
+    return (b_track)
+         
+space = np.ones((251,601,3),dtype='uint8')  #Creating an matrix with ones, of the shape of boundry shape
 Robot_Radius = int(input("Enter the Radius of the robot: "))
+Obstacle_Clearance = int(input("Enter the Obstacle Clearance of the Robot: "))
 obstacle_space(space)           #Creating the obstacle boundries
-space = np.repeat(space,2,axis=0)
-space = np.repeat(space,2,axis=1)
+
 
 Obs_Coords= resize_obstacle(space)
 # for val in Obs_Coords:
@@ -263,6 +249,7 @@ Obs_Coords= resize_obstacle(space)
 
 initial_pt = User_Inputs_Start(Obs_Coords)  
 goal_pt = User_Inputs_Goal(Obs_Coords)
+
 Length_of_stepsize = int(input("Enter the stepsize of the robot in units bet(1<=stepsize<=10): "))
 
 #print(initial_pt)
@@ -275,72 +262,57 @@ start = (InitialTotalCost,InitialEucledian_dist,0,initial_pt)
 #print(start)
 UncheckedList.put(start)
 #print(UncheckedList)
-while True:
+reached=0
+while UncheckedList.qsize() != 0:
     a = UncheckedList.get()
-    # print("a: ", a, "is of type: ", type(a))
-    # print("a[3]: ", a[3], "is of type: ", type(a[3]))
-    # print("a[3][1]: ", a[3][1], "is of type: ", type(a[3][1]))
-    x = int(a[3][0])
-    y = int(a[3][1])
-
-    CheckedList[y, x] = 1
+    
+    #print(goal_pt)
+    CheckedList[a[3][1],a[3][0]] = 1
     if a[3] != goal_pt and a[1] > 1.5:
-        # print("into if")
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) < 600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin(30 * (np.pi/180))) < 250) and (a[3][1] +(Length_of_stepsize * np.sin(30 * (np.pi/180))) > 0):
+        if (0<= (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]) * (np.pi/180)))) <= 600) and (0<= (a[3][1] + (Length_of_stepsize * np.sin(30 * (np.pi/180)))) <= 250):
             Robot_0(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) < 600) and(a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180))) > 0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180))) < 250) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180))) > 0):
+        if (0<= (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+30) * (np.pi/180)))) <= 600) and (0<= (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+30) * (np.pi/180)))) <= 250):
             Robot_30(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-30) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-30) * (np.pi / 180))>0)):
+        if (0<= (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-30) * (np.pi /180))))<= 600) and (0<=(a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-30) * (np.pi / 180))))<=250):
             Robot_Inv30(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+60) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+60) * (np.pi / 180))>0)):
+        if (0<= (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]+60) * (np.pi /180))))<=600) and (0<=(a[3][1] + (Length_of_stepsize * np.sin((a[3][2]+60) * (np.pi / 180))))<=250):
             Robot_60(a)
-        if (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))<600) and (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180)))>0) and (a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-60) * (np.pi / 180))<250)) and (a[3][1] + (Length_of_stepsize * np.sin(a[3][2]-60 * (np.pi / 180))>0)):
+        if (0<= (a[3][0] + (Length_of_stepsize * np.cos((a[3][2]-60) * (np.pi /180))))<=600) and (0<=(a[3][1] + (Length_of_stepsize * np.sin((a[3][2]-60) * (np.pi / 180))))<=250):
             Robot_Inv60(a)
-    # if a[3] == goal_pt:
-    #     Pth[newPos] = pos
 
 
     else:
         print("success")
-        Robot_0(a)
-        print("CheckedList: ", CheckedList)
+        reached=1
         break
-print("Pth: ", Pth)
-print("backtracking...")
-LastKeyValue = list(Pth)[-1]
-b = B_tracking(Pth, initial_pt, LastKeyValue)
-# print("path")
-# print(b)
+if reached ==1:
+    b = B_tracking(Pth, initial_pt, goal_pt)
+    print("path")
+    print(b)
 
-size = (1200, 500)
-videoWriter = cv.VideoWriter('aStarSearch.mp4', cv.VideoWriter_fourcc(*'MJPG'), 100, size)
+    # for i in CheckedList:
+    #     space[250-i[1]][i[0]] = [255,0,0]
 
-print("Length of CheckedList: ", len(CheckedList))
+    #     cv.imshow("SPACE", space )
+    # # cv.waitKey(0)
+    #     if cv.waitKey(1) & 0xFF == ord('q'):
+    #         break
 
-# for i in CheckedList:
-#     print("i: ", i)
-#     currentSpace = space.copy()
-#     space[250-i[1], i[0]] = [255,0,0]
-#     videoWriter.write(currentSpace)
-#     # cv.imshow("SPACE", space )
-#     # if cv.waitKey(1) & 0xFF == ord('q'):
-#     #       break
-Pth = list(Pth)
-for location in Pth:
-    currentSpace = space.copy()
-    space[250 - int(location[1]), int(location[0])] = [255, 0, 0]
-    videoWriter.write(currentSpace)
+    for i in CloseList:
+        j = Pth.get(i)
+        cv.arrowedLine(space,(i[0],250-i[1]),(j[0],250-j[1]),(0,0,255),1)
+        cv.imshow("Space",space)
+        if cv.waitKey(5) & 0xFF == ord('q'):
+            break
 
 
-for j in b:
-    # print("j[1]: ", j[1], "is of type: ", type(j[1]))
-    j = (int(j[0]), int(j[1]), int(j[2]))
-    currentSpace = space.copy()
-    space[250-j[1]][j[0]] = [0,255,0]
-    videoWriter.write(currentSpace)
+    for j in b:
+        space[250-j[1]][j[0]] = [0,255,0]
+        cv.circle(space,(j[0],250-j[1]), Robot_Radius, (0,255,0), -1)
+        cv.imshow("SPACE", space )
+        if cv.waitKey(50) & 0xFF == ord('q'):
+            break
+else:
+    print("The Gaol node cannot be reached")
 
-videoWriter.release()
 cv.destroyAllWindows()
-
-endTime = time.time()
-print("\nrun time = ", endTime - startTime, "seconds")
